@@ -1,17 +1,50 @@
 use structopt::StructOpt;
 use std::collections::{HashMap, VecDeque};
 use std::io;
+use std::fs::File;
+use std::io::Write;
 
 pub mod intcode;
 
 #[derive(StructOpt)]
 struct Cli {
+	/// Input program
 	#[structopt(parse(from_os_str))]
 	path: std::path::PathBuf,
+
+	#[structopt(
+		name = "initial-input",
+		short = "I",
+		long = "input",
+		use_delimiter = true
+	)]
+	first_in: Vec<i64>,
+
+	#[structopt(
+		short = "i",
+		long = "input-file",
+		parse(from_os_str)
+	)]
+	input_file: Option<std::path::PathBuf>,
+
+	#[structopt(
+		short = "o",
+		long = "output-file",
+		parse(from_os_str)
+	)]
+	output_file: Option<std::path::PathBuf>,
+
+	// #[structopt(
+	// 	short = "N",
+	// 	long = "disable-stdin"
+	// )]
+	// disable_stdin: bool,
 }
 
 fn parse_int_list(list: &mut String) -> Vec<i64> {
 	list.retain(|c| c.is_digit(10) || c == ',' || c == '-');
+
+	if list.is_empty() {return Vec::new()}
 
 	list
 		.split(',')
@@ -30,7 +63,7 @@ fn read_program(path: &std::path::PathBuf) -> HashMap<i64, i64> {
 	memory
 }
 
-fn read_input() -> Vec<i64> {
+fn read_stdin() -> Vec<i64> {
 	let mut input = String::new();
 
 	io::stdin()
@@ -43,8 +76,26 @@ fn read_input() -> Vec<i64> {
 fn main() {
 	let args = Cli::from_args();
 
+	// println!("{:?}", args.first_in);
+	// println!("{:?}", args.input_file);
+	// println!("{:?}", args.output_file);
+	// println!("{:?}", args.disable_stdin);
+
 	let memory = read_program(&args.path);
-	let input: Vec<i64> = read_input();
+	let mut input: Vec<i64> = Vec::new();
+
+	input.append(&mut args.first_in.clone());
+	match args.input_file {
+		None => {}
+		Some(path) => {
+			let mut content = std::fs::read_to_string(path).expect("Failed to read input file");
+			input.append(&mut parse_int_list(&mut content));
+		}
+	}
+	// TODO reenable stdin, but only read from stdin if other inputs are depleted
+	// if !args.disable_stdin {
+	//	input.append(&mut read_stdin());
+	// }
 
 	// println!("{:?}", input);
 	// println!("{:?}", memory);
@@ -53,5 +104,18 @@ fn main() {
 
 	let output = vm.run();
 
-	println!("{:?}", output);
+	match args.output_file {
+		None => println!("{:?}", output),
+		Some(path) => {
+			let output = format!("{:?}", output);
+			let mut outfile = match File::create(&path) {
+				Err(err) => panic!("Failed to create output file: {}", err),
+				Ok(file) => file
+			};
+			match outfile.write_all(output.as_bytes()) {
+				Err(err) => panic!("Failed to write to output file: {}", err),
+				Ok(_) => {}
+			}
+		}
+	}
 }
