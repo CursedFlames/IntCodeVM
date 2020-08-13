@@ -1,10 +1,11 @@
-use structopt::StructOpt;
-use std::collections::{HashMap, VecDeque};
-use std::io;
+use std::collections::VecDeque;
 use std::fs::File;
+use std::io;
 use std::io::Write;
 
-pub mod intcode;
+use structopt::StructOpt;
+
+mod intcode;
 
 #[derive(StructOpt)]
 struct Cli {
@@ -52,15 +53,15 @@ fn parse_int_list(list: &mut String) -> Vec<i64> {
 		.collect()
 }
 
-fn read_program(path: &std::path::PathBuf) -> HashMap<i64, i64> {
+fn read_program(path: &std::path::PathBuf) -> Vec<i64> {
 	let mut content = std::fs::read_to_string(path).expect("Failed to read file");
-	let program = parse_int_list(&mut content);
-	let mut memory = HashMap::new();
-	for (i, x) in program.iter().enumerate() {
-		// I don't know why x needs to be dereferenced here, but whatever
-		memory.insert(i as i64, *x);
-	}
-	memory
+	/*let program = */parse_int_list(&mut content)//;
+	// let mut memory = HashMap::new();
+	// for (i, x) in program.iter().enumerate() {
+	// 	// I don't know why x needs to be dereferenced here, but whatever
+	// 	memory.insert(i as i64, *x);
+	// }
+	// memory
 }
 
 fn read_stdin() -> Vec<i64> {
