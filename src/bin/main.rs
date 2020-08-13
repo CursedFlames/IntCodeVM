@@ -5,7 +5,7 @@ use std::io::Write;
 
 use structopt::StructOpt;
 
-mod intcode;
+use intcode::intcode;
 
 #[derive(StructOpt)]
 struct Cli {

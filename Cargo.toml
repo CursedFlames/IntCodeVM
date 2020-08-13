@@ -8,3 +8,10 @@ edition = "2018"
 
 [dependencies]
 structopt = "0.3.16"
+
+[dev-dependencies]
+criterion = "0.3.3"
+
+[[bench]]
+name = "intcode_bench"
+harness = false
