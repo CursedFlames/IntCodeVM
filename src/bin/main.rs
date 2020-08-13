@@ -35,6 +35,13 @@ struct Cli {
 	)]
 	output_file: Option<std::path::PathBuf>,
 
+	#[structopt(
+		short = "M",
+		long = "dense-memory-size",
+		default_value = "10000"
+	)]
+	dense_memory: usize,
+
 	// #[structopt(
 	// 	short = "N",
 	// 	long = "disable-stdin"
@@ -101,7 +108,7 @@ fn main() {
 	// println!("{:?}", input);
 	// println!("{:?}", memory);
 
-	let mut vm = intcode::IntVM::new(memory, VecDeque::from(input));
+	let mut vm = intcode::IntVM::new(memory, args.dense_memory as i64, VecDeque::from(input));
 
 	let output = vm.run();
 
